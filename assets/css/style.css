@@ -1,0 +1,16 @@
+#header {
+    height: 350px;
+    background-image: url("../images/mood.png");
+    background-size: cover;
+}
+
+.heading {
+    background: white;
+    text-align: center;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+#new-gif-form {
+    text-align: justify;
+}

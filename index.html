@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GifTastic</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+  </head>
+  <body>
+    
+    <div id="header">
+        <div class="container">
+          <div class="col-md-4"></div>
+          <div class="col-md-4">
+            <h1 class="heading">Pick Your Mood</h1>
+            <h2 class="heading">...or add a new one!</h2>
+          </div>
+          <div class="col-md-4"></div>
+        </div>
+    </div>
+
+    <br>
+    
+    <div id="buttons-appear-here" class="container">
+    </div>
+    
+    <div class="container">
+
+        <div class="col-md-8">
+            
+            <br>
+            <div id="gifs-appear-here"></div>
+
+        </div>
+        
+        <div class="col-md-4">
+
+            <form id="new-gif-form" role="form">
+
+                <h1>Feeling different?</h1>
+
+                <div class="form-group">
+
+                    <label for="mood-input">Add your mood here</label>
+                    <input type="text" id="mood-input">
+
+                </div>
+
+                <input id="addGif" type="submit" value="Add your mood" class="btn btn-success">
+                <input id="removeGif" type="submit" value="Remove last mood" class="btn btn-danger">
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript">
+
+    /* Instructions
+
+    1. Before you can make any part of our site work, you need to create an array of strings, each one related to a topic that interests you. Save it to a variable called `topics`.
+
+    2. Your app should take the topics in this array and create buttons in your HTML.
+    * Try using a loop that appends a button for each string in the array.
+
+    3. When the user clicks on a button, the page should grab 10 static, non-animated gif images from the GIPHY API and place them on the page.
+
+    4. When the user clicks one of the still GIPHY images, the gif should animate. If the user clicks the gif again, it should stop playing.
+
+    5. Under every gif, display its rating (PG, G, so on).
+
+    6. Add a form to your page takes the value from a user input box and adds it into your `topics` array. Then make a function call that takes each topic in the array and remakes the buttons on the page.*/
+
+    $(document).ready(function() {
+    // Create an array of moods for the user to choose their current mood from;
+    var moods = ["Happy", "Sad", "Angry", "Scared", "Confused", "Bored", "Busy", "Crazy", "Anxious", "Proud", "Tired"];
+    
+    // Create a function that will iterate through our array of moods to generate the buttons which, when clicked, will summon relevant Gifs from the GIPHY API
+    function createGifButtons(){
+        // Erase previous content of the buttons display area
+        $("#buttons-appear-here").empty();
+        // Create a for loop to grab each mood in our array so that it can be assigned a bunch of data/style properties
+        for (var i = 0; i < moods.length; i++){
+            // Assign each mood to a button in the HTML
+            var gifButton = $("<button>");
+            // Add the same class to each button to help manipulate all of them simultaenously
+            gifButton.addClass("mood");
+            // Add the same Bootstrap style class to each button to make them appear uniform on the page
+            gifButton.addClass("btn btn-info")
+            // Assign each button the data-name of whichever mood button in the array the loop is currently iterating through at this moment. This is essential as the data-name is responsible for pulling relevent GIFs onto our page
+            gifButton.attr("data-name", moods[i]);
+            // Assign the text of each mood in our moods array to a button we have created
+            gifButton.text(moods[i]);
+            // Append each newly created button to our buttonsDisplay div which will hold it
+            $("#buttons-appear-here").append(gifButton);
+        }
+    }
+
+    // Create a function to add a new mood button
+    function addGifButton(){
+        $("#addGif").on("click", function(){
+        var mood = $("#mood-input").val().trim();
+        if (mood == ""){
+        return false; // added so user cannot add a blank button
+        }
+        moods.push(mood);
+
+        createGifButtons();
+        return false;
+        });
+    }
+
+    // Create a function to remove the last mood button
+    function deleteLastButton(){
+        $("removeGif").on("click", function(){
+        moods.pop(mood);
+        createGifButtons();
+        return false;
+        });
+    }
+
+    // Create a function that will display all of the gifs
+    function displayGifs(){
+        // Assign the mood variable to the data-name of whichever button has been clicked. This will ensure that even user-created mood buttons summon relevant Gifs from the API
+        var mood = $(this).attr("data-name");
+        // Set the queryURL to change its 'q' value each time depending on which mood button has been clicked. Set a limit of 10 Gifs per query. 
+        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + mood + "&api_key=dc6zaTOxFJmzC&limit=10";
+        $.ajax({
+            url: queryURL,
+            method: 'GET'
+        })
+        // Set up a promise which runs once the AJAX call has been returned
+        .then(function(response) {
+            // Empty the previous content in the gifsDisplay div to ensure gifs generated from previous clicks aren't being stacked on top of each other
+            $("#gifs-appear-here").empty();
+            // Assign the data coming from the API to a variable
+            var results = response.data;
+            // Check to make sure the user-generated button hasn't yielded no response from the API
+            if (results == ""){
+            // If their mood/search query was too obscure, we need to alert them as to why there's nothing showing up on the screen when they click the button
+            alert("There isn't a gif for this selected button");
+            }
+            // Create a for loop that will display each of the Gifs fed back from the API -> results.length has already been set to 10 in our queryURL
+            for (var i=0; i<results.length; i++){
+                // Create a div element in the HTML for the Gifs to be displayed inside
+                var gifDiv = $("<div>");
+                // Add a class value to the new div we've just dynamically created to ensure we can target it easily
+                gifDiv.addClass("gifDiv");
+                // Create a new image element to display each Gif we receive from the API
+                var gifImage = $("<img>");
+                // Assign the correct JSON source link to each Gif on the page using attributes
+                gifImage.attr("src", results[i].images.fixed_height_still.url);
+                // Assign a "data-still" link to each Gif which can be activated on click
+                gifImage.attr("data-still",results[i].images.fixed_height_still.url);
+                // Assign a "data-animate" link to each Gif which can be activated on click. The Gif's default state is actually animated.
+                gifImage.attr("data-animate",results[i].images.fixed_height.url);
+                // Assign a new default "data-state" for each Gif
+                gifImage.attr("data-state", "still");
+                // Add a class value to each new Gif to help to target them as a group for styling purposes
+                gifImage.addClass("image");
+                // As we proceed through our for loop, append each Gif to the gifDiv where it will sit with its rating.
+                gifDiv.append(gifImage);
+                // Create a new paragraph element and text to display the rating of each Gif coming from the API, transform it to upper case so it displays as 'PG' rather than 'pg', and assign it to a variable
+                var gifRating = $("<p>").text("Rating: " + results[i].rating.toUpperCase());
+                // As we move through our for loop, append each newly-created paragraph to the gifDiv that we created. Since we're generating each Gif on the page using a for loop too, the paragraphs will be added one-by-one along with each new Gif
+                gifDiv.append(gifRating);
+                // Prepend the gifDiv variable we've just created (to hold everything coming fresh from the API) to the pre-existing gifsDisplay div in the HTML
+                $("#gifs-appear-here").prepend(gifDiv);
+            }
+        });
+    }
+
+    // Call our functions
+    createGifButtons();
+    addGifButton();
+    deleteLastButton();
+
+    // Add "Document Event Listeners" that will determine the present state of our Gifs (still or animated) and ensure that our clicks reverse this each time
+    $(document).on("click", ".mood", displayGifs);
+    $(document).on("click", ".image", function(){
+        // Assign the current data-state of whichever Gif was clicked to a variable
+        var state = $(this).attr('data-state');
+        if (state == 'still'){
+            // If the Gif is still, change the JSON src link to the animated version and update its data-state to animate
+            $(this).attr('src', $(this).data('animate'));
+            $(this).attr('data-state', 'animate');
+        } else {
+            // If the Gif is moving, change the JSON src link back to the still version and update its data-state to still
+            $(this).attr('src', $(this).data('still'));
+            $(this).attr('data-state', 'still');
+        }
+    });
+    });
+
+    /* GifTastic
+
+    ### Bonus Goals
+
+    1. Ensure your app is fully mobile responsive.
+
+    2. Allow users to request additional gifs to be added to the page.
+    * Each request should ADD 10 gifs to the page, NOT overwrite the existing gifs.
+
+    3. List additional metadata (title, tags, etc) for each gif in a clean and readable format.
+
+    4. Include a 1-click download button for each gif, this should work across device types.
+
+    5. Integrate this search with additional APIs such as OMDB, or Bands in Town. Be creative and build something you are proud to showcase in your portfolio
+
+    6. Allow users to add their favorite gifs to a `favorites` section.
+    * This should persist even when they select or add a new topic.
+    * If you are looking for a major challenge, look into making this section persist even when the page is reloaded(via localStorage or cookies).
+
+    ### Reminder: Submission on BCS
+
+    * Please submit both the deployed Github.io link to your homework AND the link to the Github Repository!
+
+    - - -
+
+    ### Create a README.md
+
+    Add a `README.md` to your repository describing the project. Here are some resources for creating your `README.md`. Here are some resources to help you along the way:
+
+    * [About READMEs](https://help.github.com/articles/about-readmes/)
+
+    * [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
+
+    - - -
+
+    ### Add To Your Portfolio
+
+    After completing the homework please add the piece to your portfolio. Make sure to add a link to your updated portfolio in the comments section of your homework so the TAs can easily ensure you completed this step when they are grading the assignment. To receive an 'A' on any assignment, you must link to it from your portfolio.*/
+    </script>
+  </body>
+</html>
