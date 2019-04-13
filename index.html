@@ -125,7 +125,7 @@
         // Assign the mood variable to the data-name of whichever button has been clicked. This will ensure that even user-created mood buttons summon relevant Gifs from the API
         var mood = $(this).attr("data-name");
         // Set the queryURL to change its 'q' value each time depending on which mood button has been clicked. Set a limit of 10 Gifs per query. 
-        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + mood + "&api_key=dc6zaTOxFJmzC&limit=10";
+        var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + mood + "&api_key=dc6zaTOxFJmzC&limit=10";
         $.ajax({
             url: queryURL,
             method: 'GET'
